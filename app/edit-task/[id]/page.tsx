@@ -81,7 +81,7 @@ export default function EditTaskPage() {
   };
 
   const handleCancel = () => {
-    router.push('/focus-wall');
+    router.push('/');
   };
 
   if (!task) {
@@ -93,7 +93,7 @@ export default function EditTaskPage() {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Task Not Found</h2>
             <p className="text-gray-600 mb-6">The task you're looking for doesn't exist.</p>
             <button
-              onClick={() => router.push('/focus-wall')}
+              onClick={() => router.push('/')}
               className="py-3 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 shadow-md hover:shadow-lg transition-all duration-200"
             >
               Back to Focus Wall

@@ -75,7 +75,7 @@ export default function EditGoalPage() {
   };
 
   const handleCancel = () => {
-    router.push('/focus-wall');
+    router.push('/');
   };
 
   if (!goal) {
