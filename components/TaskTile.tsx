@@ -116,7 +116,7 @@ export default function TaskTile({ id, title, goal, priority, isDragging = false
             className="mt-1 w-5 h-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
           />
           <div className="flex-1 min-w-0">
-            <h3 className={`font-semibold mb-2 text-lg ${completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>{title}</h3>
+            <h3 className={`font-semibold mb-2 text-lg break-words ${completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>{title}</h3>
             {goal && (
               <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-2">
                 <span>🏁</span>

@@ -321,7 +321,7 @@ export default function FocusWallPage() {
                 <p className="text-sm mt-1">Create your first goal to get started!</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {activeGoals.map((goal) => {
                   const goalTasks = tasks.filter(t => t.goal_id === goal.id);
                   const activeTaskCount = goalTasks.filter(t => !t.completed && !t.archived).length;
@@ -335,6 +335,7 @@ export default function FocusWallPage() {
                       completed={goal.completed}
                       activeTaskCount={activeTaskCount}
                       onToggleComplete={handleGoalComplete}
+                      compact={true}
                     />
                   );
                 })}

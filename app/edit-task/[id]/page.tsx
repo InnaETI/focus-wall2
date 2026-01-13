@@ -121,13 +121,14 @@ export default function EditTaskPage() {
             {/* Task Title */}
             <div>
               <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">
-                Task Title *
+                Task Title * <span className="text-xs font-normal text-gray-500">({title.length}/100)</span>
               </label>
               <input
                 type="text"
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                maxLength={100}
                 placeholder="e.g., Complete Spanish lesson 1, Run 5km"
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 transition-all duration-200"
                 required

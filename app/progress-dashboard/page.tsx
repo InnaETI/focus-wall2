@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getGoals, getTasks, updateGoal, updateTask, permanentlyDeleteGoal, permanentlyDeleteTask, type Goal, type Task } from '@/lib/data';
+import { getGoals, getTasks, updateGoal, updateTask, permanentlyDeleteGoal, permanentlyDeleteTask, getRandomMotivationalMessage, type Goal, type Task } from '@/lib/data';
 import TaskTile from '@/components/TaskTile';
 import GoalCard from '@/components/GoalCard';
 
@@ -12,6 +12,8 @@ export default function ProgressDashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showCompleted, setShowCompleted] = useState(true);
   const [showArchived, setShowArchived] = useState(true);
+  const [welcomeMessage, setWelcomeMessage] = useState<string>('');
+  const [completionMessage, setCompletionMessage] = useState<string>('');
 
   useEffect(() => {
     loadData();
@@ -21,6 +23,12 @@ export default function ProgressDashboardPage() {
     const [goalsData, tasksData] = await Promise.all([getGoals(), getTasks()]);
     setGoals(goalsData);
     setTasks(tasksData);
+    
+    // Get random motivational messages
+    const welcome = await getRandomMotivationalMessage('welcome');
+    const completion = await getRandomMotivationalMessage('completion');
+    setWelcomeMessage(welcome);
+    setCompletionMessage(completion);
   };
 
   const completedGoals = goals.filter(g => g.completed && !g.archived);
@@ -134,6 +142,12 @@ export default function ProgressDashboardPage() {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Message */}
+        {welcomeMessage && (
+          <div className="bg-gradient-to-r from-pink-100 to-rose-100 rounded-xl p-4 mb-6 border-2 border-pink-200">
+            <p className="text-center text-gray-800 font-medium italic">"{welcomeMessage}"</p>
+          </div>
+        )}
         {/* Analytics Section */}
         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">📊 Statistics</h2>
@@ -170,7 +184,8 @@ export default function ProgressDashboardPage() {
                       {count > 0 && <span className="text-xs font-semibold text-pink-800 mb-1">{count}</span>}
                     </div>
                     <div className="text-xs text-gray-600 mt-2 text-center">
-                      {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      <div className="font-semibold">{date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                      <div>{date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                     </div>
                   </div>
                 );
@@ -243,6 +258,11 @@ export default function ProgressDashboardPage() {
                 </div>
               )}
             </details>
+            {completedTasks.length > 0 && completionMessage && (
+              <div className="mt-4 bg-green-50 rounded-lg p-3 border border-green-200">
+                <p className="text-sm text-center text-green-800 italic">"{completionMessage}"</p>
+              </div>
+            )}
           </section>
         )}
 
@@ -260,7 +280,7 @@ export default function ProgressDashboardPage() {
                   <p className="text-lg font-medium">No completed goals yet</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                <div className="space-y-2 mt-4">
                   {completedGoals.map((goal) => {
                     const completedDate = goal.completed_at ? new Date(goal.completed_at).toLocaleDateString() : '';
                     return (
@@ -271,15 +291,18 @@ export default function ProgressDashboardPage() {
                           deadline={goal.deadline}
                           whyItMatters={goal.why_it_matters}
                           completed={true}
+                          compact={true}
                           onToggleComplete={handleRestoreGoal}
                         />
-                        <div className="text-xs text-gray-500 mt-2 ml-1">Completed: {completedDate}</div>
-                        <button
-                          onClick={() => handleRestoreGoal(goal.id)}
-                          className="mt-2 w-full py-2 px-4 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-all duration-200"
-                        >
-                          ↺ Restore
-                        </button>
+                        <div className="flex items-center justify-between mt-2 ml-7">
+                          <span className="text-xs text-gray-500">Completed: {completedDate}</span>
+                          <button
+                            onClick={() => handleRestoreGoal(goal.id)}
+                            className="py-1 px-3 rounded-lg text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-all duration-200"
+                          >
+                            ↺ Restore
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

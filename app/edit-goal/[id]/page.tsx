@@ -129,7 +129,7 @@ export default function EditGoalPage() {
             {/* Goal Name */}
             <div>
               <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
-                Goal Name *
+                Goal Name * <span className="text-xs font-normal text-gray-500">({name.length}/100)</span>
               </label>
               <input
                 type="text"
