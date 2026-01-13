@@ -59,20 +59,20 @@ export default function GoalCard({ id, name, deadline, whyItMatters, completed =
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className={`text-sm font-semibold break-words flex-1 ${completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+              <h3 className={`text-sm font-semibold break-words flex-1 min-w-0 ${completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
                 {name}
               </h3>
               <span className="text-lg flex-shrink-0">🎯</span>
             </div>
             {(deadlineDate || activeTaskCount > 0) && (
-              <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+              <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 break-words">
                 {deadlineDate && (
-                  <span className={isOverdue ? 'text-red-600 font-semibold' : ''}>
+                  <span className={`break-words ${isOverdue ? 'text-red-600 font-semibold' : ''}`}>
                     {deadlineDate} {isOverdue && '⚠️'}
                   </span>
                 )}
                 {activeTaskCount > 0 && (
-                  <span className="text-orange-600">
+                  <span className="text-orange-600 break-words">
                     📋 {activeTaskCount} active task{activeTaskCount !== 1 ? 's' : ''}
                   </span>
                 )}
@@ -102,7 +102,7 @@ export default function GoalCard({ id, name, deadline, whyItMatters, completed =
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className={`text-lg font-semibold break-words ${completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+            <h3 className={`text-lg font-semibold break-words flex-1 min-w-0 ${completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
               {name}
             </h3>
             <span className="text-2xl flex-shrink-0">🎯</span>
@@ -113,7 +113,7 @@ export default function GoalCard({ id, name, deadline, whyItMatters, completed =
             </div>
           )}
           {deadlineDate && (
-            <div className={`text-sm mb-2 ${isOverdue ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
+            <div className={`text-sm mb-2 break-words ${isOverdue ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
               <span className="font-medium">Deadline:</span> {deadlineDate} {isOverdue && '⚠️'}
             </div>
           )}
