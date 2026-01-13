@@ -35,11 +35,15 @@ export default function TaskTile({ id, title, goal, priority, isDragging = false
   const gradient = gradientColors[colorIndex % gradientColors.length];
   const [wasDragged, setWasDragged] = useState(false);
   
-  const handleCheckboxClick = (e: React.MouseEvent) => {
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     if (onToggleComplete) {
       onToggleComplete(id);
     }
+  };
+  
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
   
   const handleDragStartInternal = (e: React.DragEvent) => {
@@ -107,23 +111,24 @@ export default function TaskTile({ id, title, goal, priority, isDragging = false
           <input
             type="checkbox"
             checked={completed}
-            onChange={handleCheckboxClick}
+            onChange={handleCheckboxChange}
             onClick={handleCheckboxClick}
             className="mt-1 w-5 h-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
           />
           <div className="flex-1 min-w-0">
             <h3 className={`font-semibold mb-2 text-lg ${completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>{title}</h3>
-          {goal && (
-            <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-2">
-              <span>🏁</span>
-              <span className="truncate">{goal.name}</span>
+            {goal && (
+              <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-2">
+                <span>🏁</span>
+                <span className="truncate">{goal.name}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${priorityColors[priority]}`}>
+                {priority}
+              </div>
+              <span className="text-xs text-gray-500 opacity-70">Click to edit</span>
             </div>
-          )}
-          <div className="flex items-center gap-2">
-            <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${priorityColors[priority]}`}>
-              {priority}
-            </div>
-            <span className="text-xs text-gray-500 opacity-70">Click to edit</span>
           </div>
         </div>
       </div>

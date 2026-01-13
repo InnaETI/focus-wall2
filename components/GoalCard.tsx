@@ -18,11 +18,15 @@ export default function GoalCard({ id, name, deadline, whyItMatters, completed =
     router.push(`/edit-goal/${id}`);
   };
   
-  const handleCheckboxClick = (e: React.MouseEvent) => {
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     if (onToggleComplete) {
       onToggleComplete(id);
     }
+  };
+  
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null;
@@ -43,7 +47,7 @@ export default function GoalCard({ id, name, deadline, whyItMatters, completed =
           <input
             type="checkbox"
             checked={completed}
-            onChange={handleCheckboxClick}
+            onChange={handleCheckboxChange}
             onClick={handleCheckboxClick}
             className="mt-1 w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
           />
