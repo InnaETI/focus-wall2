@@ -35,7 +35,7 @@ export default function AddTaskPage() {
 
     if (goals.length === 0) {
       alert('Please create a goal first');
-      router.push('/focus-wall/add-goal');
+      router.push('/add-goal');
       return;
     }
 
@@ -47,7 +47,7 @@ export default function AddTaskPage() {
         priority,
         notes: notes.trim() || null,
       });
-      router.push('/focus-wall');
+      router.push('/');
     } catch (error) {
       console.error('Error creating task:', error);
       alert('Failed to create task. Please try again.');
@@ -57,7 +57,7 @@ export default function AddTaskPage() {
   };
 
   const handleCancel = () => {
-    router.push('/focus-wall');
+      router.push('/');
   };
 
   if (goals.length === 0) {

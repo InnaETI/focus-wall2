@@ -1,37 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { getGoals, getTasks, updateGoal, deleteGoal, type Goal } from '@/lib/data';
-import DeleteModal from '@/components/DeleteModal';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createGoal } from '@/lib/data';
 
-export default function EditGoalPage() {
+export default function AddGoalPage() {
   const router = useRouter();
-  const params = useParams();
-  const goalId = params.id as string;
-  
-  const [goal, setGoal] = useState<Goal | null>(null);
   const [name, setName] = useState('');
   const [deadline, setDeadline] = useState('');
   const [whyItMatters, setWhyItMatters] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    loadData();
-  }, [goalId]);
-
-  const loadData = async () => {
-    const goalsData = await getGoals();
-    const foundGoal = goalsData.find(g => g.id === goalId);
-    if (foundGoal) {
-      setGoal(foundGoal);
-      setName(foundGoal.name);
-      setDeadline(foundGoal.deadline || '');
-      setWhyItMatters(foundGoal.why_it_matters || '');
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,60 +21,23 @@ export default function EditGoalPage() {
 
     setIsSubmitting(true);
     try {
-      await updateGoal(goalId, {
+      await createGoal({
         name: name.trim(),
         deadline: deadline || null,
         why_it_matters: whyItMatters.trim() || null,
       });
-      router.push('/focus-wall');
+      router.push('/');
     } catch (error) {
-      console.error('Error updating goal:', error);
-      alert('Failed to update goal. Please try again.');
+      console.error('Error creating goal:', error);
+      alert('Failed to create goal. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteClick = () => {
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    setIsDeleting(true);
-    try {
-      await deleteGoal(goalId);
-      router.push('/focus-wall');
-    } catch (error) {
-      console.error('Error deleting goal:', error);
-      alert('Failed to delete goal. Please try again.');
-      setIsDeleting(false);
-      setShowDeleteModal(false);
-    }
-  };
-
   const handleCancel = () => {
-    router.push('/focus-wall');
+      router.push('/');
   };
-
-  if (!goal) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-rose-100 to-orange-100 py-8 flex items-center justify-center">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="text-6xl mb-4">🔍</div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Goal Not Found</h2>
-            <p className="text-gray-600 mb-6">The goal you're looking for doesn't exist.</p>
-            <button
-              onClick={() => router.push('/focus-wall')}
-              className="py-3 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 shadow-md hover:shadow-lg transition-all duration-200"
-            >
-              Back to Focus Wall
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-rose-100 to-orange-100 py-8">
@@ -104,9 +45,9 @@ export default function EditGoalPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-rose-800 bg-clip-text text-transparent mb-2">
-            Edit Goal
+            Add Goal
           </h1>
-          <p className="text-lg text-gray-700">Update your goal details</p>
+          <p className="text-lg text-gray-700">Set a new goal to work towards</p>
         </div>
 
         {/* Form */}
@@ -167,27 +108,6 @@ export default function EditGoalPage() {
                 Cancel
               </button>
               <button
-                type="button"
-                onClick={handleDeleteClick}
-                disabled={isDeleting}
-                className={`
-                  px-6
-                  py-3
-                  rounded-xl
-                  font-semibold
-                  text-white
-                  transition-all
-                  duration-200
-                  ${isDeleting 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-red-500 hover:bg-red-600'
-                  }
-                  shadow-md hover:shadow-lg
-                `}
-              >
-                Delete Goal
-              </button>
-              <button
                 type="submit"
                 disabled={isSubmitting}
                 className={`
@@ -205,21 +125,11 @@ export default function EditGoalPage() {
                   }
                 `}
               >
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
+                {isSubmitting ? 'Saving...' : 'Save Goal'}
               </button>
             </div>
           </form>
         </div>
-
-        {/* Delete Modal */}
-        <DeleteModal
-          isOpen={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={handleDeleteConfirm}
-          title="Delete Goal"
-          message="Are you sure you want to delete this goal? This will also delete all tasks associated with it. This action cannot be undone."
-          itemName={goal?.name}
-        />
       </div>
     </div>
   );

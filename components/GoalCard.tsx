@@ -13,7 +13,7 @@ export default function GoalCard({ id, name, deadline, whyItMatters }: GoalCardP
   const router = useRouter();
   
   const handleClick = () => {
-    router.push(`/focus-wall/edit-goal/${id}`);
+    router.push(`/edit-goal/${id}`);
   };
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null;

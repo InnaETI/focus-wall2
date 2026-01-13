@@ -2,62 +2,56 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getGoals, getTasks, updateTask, deleteTask, type Goal, type Task } from '@/lib/data';
+import { getGoals, getTasks, updateGoal, deleteGoal, type Goal } from '@/lib/data';
 import DeleteModal from '@/components/DeleteModal';
 
-export default function EditTaskPage() {
+export default function EditGoalPage() {
   const router = useRouter();
   const params = useParams();
-  const taskId = params.id as string;
+  const goalId = params.id as string;
   
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [task, setTask] = useState<Task | null>(null);
-  const [title, setTitle] = useState('');
-  const [goalId, setGoalId] = useState('');
-  const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
-  const [notes, setNotes] = useState('');
+  const [goal, setGoal] = useState<Goal | null>(null);
+  const [name, setName] = useState('');
+  const [deadline, setDeadline] = useState('');
+  const [whyItMatters, setWhyItMatters] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadData();
-  }, [taskId]);
+  }, [goalId]);
 
   const loadData = async () => {
-    const [goalsData, tasksData] = await Promise.all([getGoals(), getTasks()]);
-    setGoals(goalsData);
-    
-    const foundTask = tasksData.find(t => t.id === taskId);
-    if (foundTask) {
-      setTask(foundTask);
-      setTitle(foundTask.title);
-      setGoalId(foundTask.goal_id || '');
-      setPriority(foundTask.priority);
-      setNotes(foundTask.notes || '');
+    const goalsData = await getGoals();
+    const foundGoal = goalsData.find(g => g.id === goalId);
+    if (foundGoal) {
+      setGoal(foundGoal);
+      setName(foundGoal.name);
+      setDeadline(foundGoal.deadline || '');
+      setWhyItMatters(foundGoal.why_it_matters || '');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title.trim()) {
-      alert('Please enter a task title');
+    if (!name.trim()) {
+      alert('Please enter a goal name');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await updateTask(taskId, {
-        title: title.trim(),
-        goal_id: goalId || null,
-        priority,
-        notes: notes.trim() || null,
+      await updateGoal(goalId, {
+        name: name.trim(),
+        deadline: deadline || null,
+        why_it_matters: whyItMatters.trim() || null,
       });
-      router.push('/focus-wall');
+      router.push('/');
     } catch (error) {
-      console.error('Error updating task:', error);
-      alert('Failed to update task. Please try again.');
+      console.error('Error updating goal:', error);
+      alert('Failed to update goal. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -70,11 +64,11 @@ export default function EditTaskPage() {
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
     try {
-      await deleteTask(taskId);
-      router.push('/focus-wall');
+      await deleteGoal(goalId);
+      router.push('/');
     } catch (error) {
-      console.error('Error deleting task:', error);
-      alert('Failed to delete task. Please try again.');
+      console.error('Error deleting goal:', error);
+      alert('Failed to delete goal. Please try again.');
       setIsDeleting(false);
       setShowDeleteModal(false);
     }
@@ -84,14 +78,14 @@ export default function EditTaskPage() {
     router.push('/focus-wall');
   };
 
-  if (!task) {
+  if (!goal) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-100 via-rose-100 to-orange-100 py-8 flex items-center justify-center">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="text-6xl mb-4">🔍</div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Task Not Found</h2>
-            <p className="text-gray-600 mb-6">The task you're looking for doesn't exist.</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Goal Not Found</h2>
+            <p className="text-gray-600 mb-6">The goal you're looking for doesn't exist.</p>
             <button
               onClick={() => router.push('/focus-wall')}
               className="py-3 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 shadow-md hover:shadow-lg transition-all duration-200"
@@ -110,77 +104,54 @@ export default function EditTaskPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-rose-800 bg-clip-text text-transparent mb-2">
-            Edit Task
+            Edit Goal
           </h1>
-          <p className="text-lg text-gray-700">Update your task details</p>
+          <p className="text-lg text-gray-700">Update your goal details</p>
         </div>
 
         {/* Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Task Title */}
+            {/* Goal Name */}
             <div>
-              <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">
-                Task Title *
+              <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                Goal Name *
               </label>
               <input
                 type="text"
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Complete Spanish lesson 1, Run 5km"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Learn Spanish, Run a Marathon"
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 transition-all duration-200"
                 required
               />
             </div>
 
-            {/* Goal Selection */}
+            {/* Deadline */}
             <div>
-              <label htmlFor="goalId" className="block text-sm font-semibold text-gray-700 mb-2">
-                Associated Goal
+              <label htmlFor="deadline" className="block text-sm font-semibold text-gray-700 mb-2">
+                Deadline
               </label>
-              <select
-                id="goalId"
-                value={goalId}
-                onChange={(e) => setGoalId(e.target.value)}
+              <input
+                type="date"
+                id="deadline"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 transition-all duration-200"
-              >
-                <option value="">No Goal (Other Tasks)</option>
-                {goals.map((goal) => (
-                  <option key={goal.id} value={goal.id}>
-                    {goal.name}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
-            {/* Priority */}
+            {/* Why It Matters */}
             <div>
-              <label htmlFor="priority" className="block text-sm font-semibold text-gray-700 mb-2">
-                Priority
-              </label>
-              <select
-                id="priority"
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as 'High' | 'Medium' | 'Low')}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 transition-all duration-200"
-              >
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
-            </div>
-
-            {/* Notes */}
-            <div>
-              <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
-                Notes
+              <label htmlFor="whyItMatters" className="block text-sm font-semibold text-gray-700 mb-2">
+                Why It Matters
               </label>
               <textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Any additional details or reminders..."
+                id="whyItMatters"
+                value={whyItMatters}
+                onChange={(e) => setWhyItMatters(e.target.value)}
+                placeholder="What makes this goal important to you?"
                 rows={4}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 transition-all duration-200 resize-none"
               />
@@ -214,7 +185,7 @@ export default function EditTaskPage() {
                   shadow-md hover:shadow-lg
                 `}
               >
-                Delete Task
+                Delete Goal
               </button>
               <button
                 type="submit"
@@ -245,9 +216,9 @@ export default function EditTaskPage() {
           isOpen={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDeleteConfirm}
-          title="Delete Task"
-          message="Are you sure you want to delete this task? This action cannot be undone."
-          itemName={task?.title}
+          title="Delete Goal"
+          message="Are you sure you want to delete this goal? This will also delete all tasks associated with it. This action cannot be undone."
+          itemName={goal?.name}
         />
       </div>
     </div>

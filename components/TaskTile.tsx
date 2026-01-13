@@ -67,7 +67,7 @@ export default function TaskTile({ id, title, goal, priority, isDragging = false
       return;
     }
     e.stopPropagation();
-    router.push(`/focus-wall/edit-task/${id}`);
+    router.push(`/edit-task/${id}`);
   };
   
   return (
