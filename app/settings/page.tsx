@@ -54,6 +54,114 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Instructions Section */}
+        <details className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-lg p-6 mb-6 border-2 border-blue-200">
+          <summary className="cursor-pointer flex items-center gap-3">
+            <span className="text-3xl">📚</span>
+            <h2 className="text-2xl font-bold text-gray-800">How to Use Focus Wall</h2>
+            <span className="ml-auto text-sm text-gray-600">Click to expand</span>
+          </summary>
+          <div className="mt-6 space-y-6">
+            <div className="bg-white rounded-xl p-5 shadow-md">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <span className="text-2xl">🎯</span>
+                Getting Started with Goals
+              </h3>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-start gap-2">
+                  <span className="text-pink-500 font-bold">1.</span>
+                  <span>Click <strong>"+ Add Goal"</strong> to create your first goal. Give it a name (up to 100 characters), set a deadline if you want, and tell yourself why it matters! 💪</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-pink-500 font-bold">2.</span>
+                  <span>Your goals appear in a clean list format. Click any goal to edit it or check it off when complete! ✨</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-pink-500 font-bold">3.</span>
+                  <span><strong>Important:</strong> You can only complete a goal when all its tasks are done. This keeps you focused! 🎯</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 shadow-md">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <span className="text-2xl">✅</span>
+                Managing Tasks
+              </h3>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 font-bold">1.</span>
+                  <span>Click <strong>"+ Add Task"</strong> to create tasks. Every task must be linked to an active goal - no orphan tasks allowed! 📋</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 font-bold">2.</span>
+                  <span>Drag tasks into <strong>"Today's Top 3"</strong> to focus on your most important work (max 3 tasks). Drag them out when done! ⭐</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 font-bold">3.</span>
+                  <span>Click the checkbox on any task to mark it complete. You'll get a celebratory message! 🎉</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 font-bold">4.</span>
+                  <span>Click any task tile to edit or archive it. Long names wrap automatically! 📝</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 shadow-md">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <span className="text-2xl">📊</span>
+                Progress Dashboard
+              </h3>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 font-bold">1.</span>
+                  <span>Visit the <strong>Progress Dashboard</strong> to see your completion stats, daily charts, and motivational messages! 📈</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 font-bold">2.</span>
+                  <span>View completed and archived items. You can restore them or permanently delete archived items. 🔄</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 font-bold">3.</span>
+                  <span>Each time you reload, you'll see a new motivational message at the top! 🌟</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 shadow-md">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <span className="text-2xl">⚙️</span>
+                Tips & Tricks
+              </h3>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-500 font-bold">💡</span>
+                  <span><strong>Character Limits:</strong> Task and goal names are limited to 100 characters to keep things concise and readable.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-500 font-bold">💡</span>
+                  <span><strong>Auto-Archive:</strong> Completed items automatically archive after the number of days you set (default: 90 days).</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-500 font-bold">💡</span>
+                  <span><strong>Text Wrapping:</strong> All text automatically wraps if it's too long - no more cut-off text! 📐</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-500 font-bold">💡</span>
+                  <span><strong>Data Safety:</strong> Everything is stored locally in your browser. Your data stays private! 🔒</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-gradient-to-r from-pink-100 to-rose-100 rounded-lg p-4 border-2 border-pink-200">
+              <p className="text-center text-gray-800 font-medium">
+                <span className="text-2xl">🚀</span> Ready to get started? Create your first goal and watch your productivity soar!
+              </p>
+            </div>
+          </div>
+        </details>
+
         {/* Settings Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form onSubmit={handleSave} className="space-y-6">

@@ -50,6 +50,11 @@ export default function EditGoalPage() {
       alert('Please enter a goal name');
       return;
     }
+    
+    if (name.length > 100) {
+      alert('Goal name must be 100 characters or less');
+      return;
+    }
 
     setIsSubmitting(true);
     try {

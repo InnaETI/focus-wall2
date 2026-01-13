@@ -18,6 +18,11 @@ export default function AddGoalPage() {
       alert('Please enter a goal name');
       return;
     }
+    
+    if (name.length > 100) {
+      alert('Goal name must be 100 characters or less');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -62,7 +67,13 @@ export default function AddGoalPage() {
                 type="text"
                 id="name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= 100) {
+                    setName(value);
+                  }
+                }}
+                maxLength={100}
                 placeholder="e.g., Learn Spanish, Run a Marathon"
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 transition-all duration-200"
                 required

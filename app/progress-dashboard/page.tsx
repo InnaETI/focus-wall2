@@ -130,12 +130,22 @@ export default function ProgressDashboardPage() {
               </h1>
               <p className="text-lg text-gray-700">Track your productivity and achievements</p>
             </div>
-            <button
-              onClick={() => router.push('/')}
-              className="px-4 py-2 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-200"
-            >
-              ← Back
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push('/settings')}
+                className="p-2 rounded-xl text-gray-600 hover:bg-gray-100 transition-all duration-200"
+                aria-label="Settings"
+                title="Settings"
+              >
+                ⚙️
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="px-4 py-2 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-200"
+              >
+                ← Back
+              </button>
+            </div>
           </div>
         </div>
       </header>

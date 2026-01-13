@@ -34,6 +34,11 @@ export default function AddTaskPage() {
       alert('Please enter a task title');
       return;
     }
+    
+    if (title.length > 100) {
+      alert('Task title must be 100 characters or less');
+      return;
+    }
 
     if (goals.length === 0) {
       alert('Please create a goal first');
@@ -105,7 +110,12 @@ export default function AddTaskPage() {
                 type="text"
                 id="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= 100) {
+                    setTitle(value);
+                  }
+                }}
                 maxLength={100}
                 placeholder="e.g., Complete Spanish lesson 1, Run 5km"
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 transition-all duration-200"

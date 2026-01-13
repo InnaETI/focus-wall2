@@ -120,7 +120,7 @@ export default function TaskTile({ id, title, goal, priority, isDragging = false
             {goal && (
               <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-2">
                 <span>🏁</span>
-                <span className="truncate">{goal.name}</span>
+                <span className="break-words">{goal.name}</span>
               </div>
             )}
             <div className="flex items-center gap-2">
