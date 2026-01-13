@@ -19,9 +19,11 @@ export default function AddTaskPage() {
 
   const loadGoals = async () => {
     const goalsData = await getGoals();
-    setGoals(goalsData);
-    if (goalsData.length > 0 && !goalId) {
-      setGoalId(goalsData[0].id);
+    // Only show active goals (not completed or archived)
+    const activeGoals = goalsData.filter(g => !g.completed && !g.archived);
+    setGoals(activeGoals);
+    if (activeGoals.length > 0 && !goalId) {
+      setGoalId(activeGoals[0].id);
     }
   };
 
@@ -120,8 +122,8 @@ export default function AddTaskPage() {
                 value={goalId}
                 onChange={(e) => setGoalId(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200 transition-all duration-200"
+                required
               >
-                <option value="">No Goal (Other Tasks)</option>
                 {goals.map((goal) => (
                   <option key={goal.id} value={goal.id}>
                     {goal.name}

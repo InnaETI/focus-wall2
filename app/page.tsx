@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getGoals, getTasks, updateTask, updateGoal, autoArchiveItems, type Goal, type Task } from '@/lib/data';
 import TaskTile from '@/components/TaskTile';
+import Toast from '@/components/Toast';
 import GoalCard from '@/components/GoalCard';
 
 export default function FocusWallPage() {
@@ -13,6 +14,7 @@ export default function FocusWallPage() {
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverTop3, setDragOverTop3] = useState(false);
   const [dragOverOther, setDragOverOther] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -127,16 +129,26 @@ export default function FocusWallPage() {
       is_top3: newCompleted ? false : task.is_top3, // Remove from Top 3 when completed
     });
     await loadData();
+    
+    // Show toast notification
+    if (newCompleted) {
+      setToast({ message: `Task "${task.title}" completed! 🎉`, type: 'success' });
+    } else {
+      setToast({ message: `Task "${task.title}" restored`, type: 'success' });
+    }
   };
 
   const handleGoalComplete = async (goalId: string) => {
     const goal = goals.find(g => g.id === goalId);
     if (!goal) return;
     
-    // Check if there are incomplete tasks for this goal
-    const incompleteTasks = tasks.filter(t => t.goal_id === goalId && !t.completed && !t.archived);
-    if (incompleteTasks.length > 0) {
-      alert('Cannot complete goal. There are incomplete tasks associated with this goal.');
+    // Check if there are active tasks for this goal
+    const activeTasks = tasks.filter(t => t.goal_id === goalId && !t.completed && !t.archived);
+    if (activeTasks.length > 0) {
+      setToast({ 
+        message: `Cannot complete goal. There are ${activeTasks.length} active task${activeTasks.length !== 1 ? 's' : ''} remaining.`, 
+        type: 'error' 
+      });
       return;
     }
     
@@ -146,6 +158,13 @@ export default function FocusWallPage() {
       completed_at: newCompleted ? new Date().toISOString() : null,
     });
     await loadData();
+    
+    // Show toast notification
+    if (newCompleted) {
+      setToast({ message: `Goal "${goal.name}" completed! 🎉`, type: 'success' });
+    } else {
+      setToast({ message: `Goal "${goal.name}" restored`, type: 'success' });
+    }
   };
 
   return (
@@ -302,18 +321,23 @@ export default function FocusWallPage() {
                 <p className="text-sm mt-1">Create your first goal to get started!</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {activeGoals.map((goal) => (
-                  <GoalCard
-                    key={goal.id}
-                    id={goal.id}
-                    name={goal.name}
-                    deadline={goal.deadline}
-                    whyItMatters={goal.why_it_matters}
-                    completed={goal.completed}
-                    onToggleComplete={handleGoalComplete}
-                  />
-                ))}
+              <div className="space-y-3">
+                {activeGoals.map((goal) => {
+                  const goalTasks = tasks.filter(t => t.goal_id === goal.id);
+                  const activeTaskCount = goalTasks.filter(t => !t.completed && !t.archived).length;
+                  return (
+                    <GoalCard
+                      key={goal.id}
+                      id={goal.id}
+                      name={goal.name}
+                      deadline={goal.deadline}
+                      whyItMatters={goal.why_it_matters}
+                      completed={goal.completed}
+                      activeTaskCount={activeTaskCount}
+                      onToggleComplete={handleGoalComplete}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
@@ -353,6 +377,12 @@ export default function FocusWallPage() {
           </div>
         </div>
       </nav>
+      <Toast
+        message={toast?.message || ''}
+        type={toast?.type || 'success'}
+        isVisible={!!toast}
+        onClose={() => setToast(null)}
+      />
     </div>
   );
 }

@@ -148,11 +148,20 @@ export async function updateTask(taskId: string, updates: Partial<Task>): Promis
   return tasks[index];
 }
 
-export async function archiveGoal(goalId: string): Promise<void> {
+export async function archiveGoal(goalId: string, cascadeToTasks: boolean = true): Promise<void> {
   await updateGoal(goalId, {
     archived: true,
     archived_at: new Date().toISOString(),
   });
+  
+  // Cascade archive to all associated tasks
+  if (cascadeToTasks) {
+    const tasks = await getTasks();
+    const associatedTasks = tasks.filter(t => t.goal_id === goalId && !t.archived);
+    for (const task of associatedTasks) {
+      await archiveTask(task.id);
+    }
+  }
 }
 
 export async function archiveTask(taskId: string): Promise<void> {
@@ -207,4 +216,16 @@ export async function autoArchiveItems(): Promise<void> {
       }
     }
   }
+}
+
+// Helper function to get active tasks for a goal
+export async function getActiveTasksForGoal(goalId: string): Promise<Task[]> {
+  const tasks = await getTasks();
+  return tasks.filter(t => t.goal_id === goalId && !t.completed && !t.archived);
+}
+
+// Helper function to get all tasks for a goal (including completed/archived)
+export async function getAllTasksForGoal(goalId: string): Promise<Task[]> {
+  const tasks = await getTasks();
+  return tasks.filter(t => t.goal_id === goalId);
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getGoals, getTasks, updateGoal, archiveGoal, type Goal } from '@/lib/data';
+import { getGoals, getTasks, updateGoal, archiveGoal, getActiveTasksForGoal, getAllTasksForGoal, type Goal, type Task } from '@/lib/data';
 import DeleteModal from '@/components/DeleteModal';
 
 export default function EditGoalPage() {
@@ -17,13 +17,16 @@ export default function EditGoalPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [activeTaskCount, setActiveTaskCount] = useState(0);
+  const [totalTaskCount, setTotalTaskCount] = useState(0);
 
   useEffect(() => {
     loadData();
   }, [goalId]);
 
   const loadData = async () => {
-    const goalsData = await getGoals();
+    const [goalsData, tasksData] = await Promise.all([getGoals(), getTasks()]);
     const foundGoal = goalsData.find(g => g.id === goalId);
     if (foundGoal) {
       setGoal(foundGoal);
@@ -31,6 +34,13 @@ export default function EditGoalPage() {
       setDeadline(foundGoal.deadline || '');
       setWhyItMatters(foundGoal.why_it_matters || '');
     }
+    setTasks(tasksData);
+    
+    // Count tasks for this goal
+    const activeTasks = await getActiveTasksForGoal(goalId);
+    const allTasks = await getAllTasksForGoal(goalId);
+    setActiveTaskCount(activeTasks.length);
+    setTotalTaskCount(allTasks.length);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,13 +68,17 @@ export default function EditGoalPage() {
   };
 
   const handleDeleteClick = () => {
+    if (activeTaskCount > 0) {
+      alert(`Cannot archive goal. There are ${activeTaskCount} active task${activeTaskCount !== 1 ? 's' : ''} associated with this goal. Please complete or remove all tasks first.`);
+      return;
+    }
     setShowDeleteModal(true);
   };
 
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
     try {
-      await archiveGoal(goalId);
+      await archiveGoal(goalId, true); // Cascade to tasks
       router.push('/');
     } catch (error) {
       console.error('Error archiving goal:', error);
@@ -219,6 +233,8 @@ export default function EditGoalPage() {
           title="Archive Goal"
           message="Are you sure you want to archive this goal? You can restore it from the Progress Dashboard later."
           itemName={goal?.name}
+          taskCount={totalTaskCount}
+          actionType="archive"
         />
       </div>
     </div>
