@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getGoals, getTasks, updateTask, type Goal, type Task } from '@/lib/data';
+import { getGoals, getTasks, updateTask, updateGoal, autoArchiveItems, type Goal, type Task } from '@/lib/data';
 import TaskTile from '@/components/TaskTile';
 import GoalCard from '@/components/GoalCard';
 
@@ -16,6 +16,8 @@ export default function FocusWallPage() {
 
   useEffect(() => {
     loadData();
+    // Auto-archive in background
+    autoArchiveItems();
   }, []);
 
   const loadData = async () => {
@@ -24,8 +26,19 @@ export default function FocusWallPage() {
     setTasks(tasksData);
   };
 
-  const top3Tasks = tasks.filter(t => t.is_top3).slice(0, 3);
-  const otherTasks = tasks.filter(t => !t.is_top3);
+  // Filter out completed and archived items
+  const activeGoals = goals.filter(g => !g.completed && !g.archived);
+  const activeTasks = tasks.filter(t => !t.completed && !t.archived);
+  
+  const top3Tasks = activeTasks.filter(t => t.is_top3).slice(0, 3);
+  const otherTasks = activeTasks.filter(t => !t.is_top3);
+  
+  // Count completed today
+  const today = new Date().toDateString();
+  const completedToday = tasks.filter(t => {
+    if (!t.completed || !t.completed_at) return false;
+    return new Date(t.completed_at).toDateString() === today;
+  }).length;
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     setDraggedTaskId(taskId);
@@ -103,15 +116,71 @@ export default function FocusWallPage() {
     return goals.find(g => g.id === goalId) || null;
   };
 
+  const handleTaskComplete = async (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const newCompleted = !task.completed;
+    await updateTask(taskId, {
+      completed: newCompleted,
+      completed_at: newCompleted ? new Date().toISOString() : null,
+      is_top3: newCompleted ? false : task.is_top3, // Remove from Top 3 when completed
+    });
+    await loadData();
+  };
+
+  const handleGoalComplete = async (goalId: string) => {
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+    
+    // Check if there are incomplete tasks for this goal
+    const incompleteTasks = tasks.filter(t => t.goal_id === goalId && !t.completed && !t.archived);
+    if (incompleteTasks.length > 0) {
+      alert('Cannot complete goal. There are incomplete tasks associated with this goal.');
+      return;
+    }
+    
+    const newCompleted = !goal.completed;
+    await updateGoal(goalId, {
+      completed: newCompleted,
+      completed_at: newCompleted ? new Date().toISOString() : null,
+    });
+    await loadData();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-rose-100 to-orange-100 pb-20">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-pink-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-rose-800 bg-clip-text text-transparent mb-2">
-            Focus Wall
-          </h1>
-          <p className="text-lg text-gray-700">Welcome back! 👋</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-rose-800 bg-clip-text text-transparent mb-2">
+                Focus Wall
+              </h1>
+              <p className="text-lg text-gray-700">Welcome back! 👋</p>
+            </div>
+            <div className="flex items-center gap-4">
+              {completedToday > 0 && (
+                <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
+                  ✅ {completedToday} completed today
+                </div>
+              )}
+              <button
+                onClick={() => router.push('/progress-dashboard')}
+                className="px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                📊 Progress Dashboard
+              </button>
+              <button
+                onClick={() => router.push('/settings')}
+                className="p-2 rounded-xl text-gray-600 hover:bg-gray-100 transition-all duration-200"
+                aria-label="Settings"
+              >
+                ⚙️
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -150,17 +219,19 @@ export default function FocusWallPage() {
                 {top3Tasks.map((task, index) => {
                   const goal = getGoalById(task.goal_id);
                   return (
-                    <TaskTile
-                      key={task.id}
-                      id={task.id}
-                      title={task.title}
-                      goal={goal}
-                      priority={task.priority}
-                      isDragging={draggedTaskId === task.id}
-                      colorIndex={index}
-                      onDragStart={handleDragStart}
-                      onDragEnd={handleDragEnd}
-                    />
+                      <TaskTile
+                        key={task.id}
+                        id={task.id}
+                        title={task.title}
+                        goal={goal}
+                        priority={task.priority}
+                        isDragging={draggedTaskId === task.id}
+                        colorIndex={index}
+                        completed={task.completed}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onToggleComplete={handleTaskComplete}
+                      />
                   );
                 })}
               </div>
@@ -197,17 +268,19 @@ export default function FocusWallPage() {
                 {otherTasks.map((task, index) => {
                   const goal = getGoalById(task.goal_id);
                   return (
-                    <TaskTile
-                      key={task.id}
-                      id={task.id}
-                      title={task.title}
-                      goal={goal}
-                      priority={task.priority}
-                      isDragging={draggedTaskId === task.id}
-                      colorIndex={index + top3Tasks.length}
-                      onDragStart={handleDragStart}
-                      onDragEnd={handleDragEnd}
-                    />
+                      <TaskTile
+                        key={task.id}
+                        id={task.id}
+                        title={task.title}
+                        goal={goal}
+                        priority={task.priority}
+                        isDragging={draggedTaskId === task.id}
+                        colorIndex={index + top3Tasks.length}
+                        completed={task.completed}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onToggleComplete={handleTaskComplete}
+                      />
                   );
                 })}
               </div>
@@ -230,13 +303,15 @@ export default function FocusWallPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {goals.map((goal) => (
+                {activeGoals.map((goal) => (
                   <GoalCard
                     key={goal.id}
                     id={goal.id}
                     name={goal.name}
                     deadline={goal.deadline}
                     whyItMatters={goal.why_it_matters}
+                    completed={goal.completed}
+                    onToggleComplete={handleGoalComplete}
                   />
                 ))}
               </div>
@@ -251,7 +326,7 @@ export default function FocusWallPage() {
           <div className="flex gap-4">
             <button
               onClick={() => router.push('/add-task')}
-              disabled={goals.length === 0}
+              disabled={activeGoals.length === 0}
               className={`
                 flex-1
                 py-3
@@ -261,7 +336,7 @@ export default function FocusWallPage() {
                 text-white
                 transition-all
                 duration-200
-                ${goals.length === 0 
+                ${activeGoals.length === 0 
                   ? 'bg-gray-300 cursor-not-allowed' 
                   : 'bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 shadow-md hover:shadow-lg'
                 }

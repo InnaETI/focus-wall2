@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getGoals, getTasks, updateTask, deleteTask, type Goal, type Task } from '@/lib/data';
+import { getGoals, getTasks, updateTask, archiveTask, type Goal, type Task } from '@/lib/data';
 import DeleteModal from '@/components/DeleteModal';
 
 export default function EditTaskPage() {
@@ -70,11 +70,11 @@ export default function EditTaskPage() {
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
     try {
-      await deleteTask(taskId);
+      await archiveTask(taskId);
       router.push('/');
     } catch (error) {
-      console.error('Error deleting task:', error);
-      alert('Failed to delete task. Please try again.');
+      console.error('Error archiving task:', error);
+      alert('Failed to archive task. Please try again.');
       setIsDeleting(false);
       setShowDeleteModal(false);
     }
@@ -214,7 +214,7 @@ export default function EditTaskPage() {
                   shadow-md hover:shadow-lg
                 `}
               >
-                Delete Task
+                Archive Task
               </button>
               <button
                 type="submit"
@@ -245,8 +245,8 @@ export default function EditTaskPage() {
           isOpen={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDeleteConfirm}
-          title="Delete Task"
-          message="Are you sure you want to delete this task? This action cannot be undone."
+          title="Archive Task"
+          message="Are you sure you want to archive this task? You can restore it from the Progress Dashboard later."
           itemName={task?.title}
         />
       </div>

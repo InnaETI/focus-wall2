@@ -11,8 +11,10 @@ export interface TaskTileProps {
   priority: 'High' | 'Medium' | 'Low';
   isDragging?: boolean;
   colorIndex: number;
+  completed?: boolean;
   onDragStart?: (e: React.DragEvent, taskId: string) => void;
   onDragEnd?: () => void;
+  onToggleComplete?: (taskId: string) => void;
 }
 
 const priorityColors = {
@@ -28,10 +30,17 @@ const gradientColors = [
   'from-purple-200 via-pink-200 to-rose-200', // lavender
 ];
 
-export default function TaskTile({ id, title, goal, priority, isDragging = false, colorIndex, onDragStart, onDragEnd }: TaskTileProps) {
+export default function TaskTile({ id, title, goal, priority, isDragging = false, colorIndex, completed = false, onDragStart, onDragEnd, onToggleComplete }: TaskTileProps) {
   const router = useRouter();
   const gradient = gradientColors[colorIndex % gradientColors.length];
   const [wasDragged, setWasDragged] = useState(false);
+  
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onToggleComplete) {
+      onToggleComplete(id);
+    }
+  };
   
   const handleDragStartInternal = (e: React.DragEvent) => {
     setWasDragged(true);
@@ -90,11 +99,20 @@ export default function TaskTile({ id, title, goal, priority, isDragging = false
         hover:scale-[1.02]
         active:scale-95
         ${isDragging ? 'opacity-50 scale-95 cursor-move' : 'opacity-100'}
+        ${completed ? 'opacity-60' : ''}
       `}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 mb-2 text-lg">{title}</h3>
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <input
+            type="checkbox"
+            checked={completed}
+            onChange={handleCheckboxClick}
+            onClick={handleCheckboxClick}
+            className="mt-1 w-5 h-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500 cursor-pointer"
+          />
+          <div className="flex-1 min-w-0">
+            <h3 className={`font-semibold mb-2 text-lg ${completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>{title}</h3>
           {goal && (
             <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-2">
               <span>🏁</span>

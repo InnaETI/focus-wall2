@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getGoals, getTasks, updateGoal, deleteGoal, type Goal } from '@/lib/data';
+import { getGoals, getTasks, updateGoal, archiveGoal, type Goal } from '@/lib/data';
 import DeleteModal from '@/components/DeleteModal';
 
 export default function EditGoalPage() {
@@ -64,11 +64,11 @@ export default function EditGoalPage() {
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
     try {
-      await deleteGoal(goalId);
+      await archiveGoal(goalId);
       router.push('/');
     } catch (error) {
-      console.error('Error deleting goal:', error);
-      alert('Failed to delete goal. Please try again.');
+      console.error('Error archiving goal:', error);
+      alert('Failed to archive goal. Please try again.');
       setIsDeleting(false);
       setShowDeleteModal(false);
     }
@@ -185,7 +185,7 @@ export default function EditGoalPage() {
                   shadow-md hover:shadow-lg
                 `}
               >
-                Delete Goal
+                Archive Goal
               </button>
               <button
                 type="submit"
@@ -216,8 +216,8 @@ export default function EditGoalPage() {
           isOpen={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDeleteConfirm}
-          title="Delete Goal"
-          message="Are you sure you want to delete this goal? This will also delete all tasks associated with it. This action cannot be undone."
+          title="Archive Goal"
+          message="Are you sure you want to archive this goal? You can restore it from the Progress Dashboard later."
           itemName={goal?.name}
         />
       </div>

@@ -6,6 +6,10 @@ export interface Goal {
   deadline: string | null;
   why_it_matters: string | null;
   created_at: string;
+  completed: boolean;
+  completed_at: string | null;
+  archived: boolean;
+  archived_at: string | null;
   table: 'goals';
 }
 
@@ -18,7 +22,15 @@ export interface Task {
   status: string;
   is_top3: boolean;
   created_at: string;
+  completed: boolean;
+  completed_at: string | null;
+  archived: boolean;
+  archived_at: string | null;
   table: 'tasks';
+}
+
+export interface AppSettings {
+  auto_archive_days: number;
 }
 
 // Note: In a real implementation, you would use @vercel/data SDK
@@ -30,7 +42,15 @@ export async function getGoals(): Promise<Goal[]> {
   
   const stored = localStorage.getItem('focus_wall_goals');
   if (!stored) return [];
-  return JSON.parse(stored);
+  const goals = JSON.parse(stored);
+  // Migrate old goals without new fields
+  return goals.map((g: any) => ({
+    ...g,
+    completed: g.completed ?? false,
+    completed_at: g.completed_at ?? null,
+    archived: g.archived ?? false,
+    archived_at: g.archived_at ?? null,
+  }));
 }
 
 export async function getTasks(): Promise<Task[]> {
@@ -38,15 +58,42 @@ export async function getTasks(): Promise<Task[]> {
   
   const stored = localStorage.getItem('focus_wall_tasks');
   if (!stored) return [];
+  const tasks = JSON.parse(stored);
+  // Migrate old tasks without new fields
+  return tasks.map((t: any) => ({
+    ...t,
+    completed: t.completed ?? false,
+    completed_at: t.completed_at ?? null,
+    archived: t.archived ?? false,
+    archived_at: t.archived_at ?? null,
+  }));
+}
+
+export async function getSettings(): Promise<AppSettings> {
+  if (typeof window === 'undefined') return { auto_archive_days: 90 };
+  
+  const stored = localStorage.getItem('focus_wall_settings');
+  if (!stored) return { auto_archive_days: 90 };
   return JSON.parse(stored);
 }
 
-export async function createGoal(goal: Omit<Goal, 'id' | 'created_at' | 'table'>): Promise<Goal> {
+export async function updateSettings(settings: Partial<AppSettings>): Promise<AppSettings> {
+  const current = await getSettings();
+  const updated = { ...current, ...settings };
+  localStorage.setItem('focus_wall_settings', JSON.stringify(updated));
+  return updated;
+}
+
+export async function createGoal(goal: Omit<Goal, 'id' | 'created_at' | 'table' | 'completed' | 'completed_at' | 'archived' | 'archived_at'>): Promise<Goal> {
   const newGoal: Goal = {
     ...goal,
     id: crypto.randomUUID(),
     created_at: new Date().toISOString(),
     table: 'goals',
+    completed: false,
+    completed_at: null,
+    archived: false,
+    archived_at: null,
   };
   
   const goals = await getGoals();
@@ -55,7 +102,7 @@ export async function createGoal(goal: Omit<Goal, 'id' | 'created_at' | 'table'>
   return newGoal;
 }
 
-export async function createTask(task: Omit<Task, 'id' | 'created_at' | 'table' | 'is_top3' | 'status'>): Promise<Task> {
+export async function createTask(task: Omit<Task, 'id' | 'created_at' | 'table' | 'is_top3' | 'status' | 'completed' | 'completed_at' | 'archived' | 'archived_at'>): Promise<Task> {
   const newTask: Task = {
     ...task,
     id: crypto.randomUUID(),
@@ -63,6 +110,10 @@ export async function createTask(task: Omit<Task, 'id' | 'created_at' | 'table' 
     table: 'tasks',
     is_top3: false,
     status: 'active',
+    completed: false,
+    completed_at: null,
+    archived: false,
+    archived_at: null,
   };
   
   const tasks = await getTasks();
@@ -97,7 +148,21 @@ export async function updateTask(taskId: string, updates: Partial<Task>): Promis
   return tasks[index];
 }
 
-export async function deleteGoal(goalId: string): Promise<void> {
+export async function archiveGoal(goalId: string): Promise<void> {
+  await updateGoal(goalId, {
+    archived: true,
+    archived_at: new Date().toISOString(),
+  });
+}
+
+export async function archiveTask(taskId: string): Promise<void> {
+  await updateTask(taskId, {
+    archived: true,
+    archived_at: new Date().toISOString(),
+  });
+}
+
+export async function permanentlyDeleteGoal(goalId: string): Promise<void> {
   const goals = await getGoals();
   const filtered = goals.filter(g => g.id !== goalId);
   localStorage.setItem('focus_wall_goals', JSON.stringify(filtered));
@@ -108,8 +173,38 @@ export async function deleteGoal(goalId: string): Promise<void> {
   localStorage.setItem('focus_wall_tasks', JSON.stringify(filteredTasks));
 }
 
-export async function deleteTask(taskId: string): Promise<void> {
+export async function permanentlyDeleteTask(taskId: string): Promise<void> {
   const tasks = await getTasks();
   const filtered = tasks.filter(t => t.id !== taskId);
   localStorage.setItem('focus_wall_tasks', JSON.stringify(filtered));
+}
+
+// Auto-archive logic
+export async function autoArchiveItems(): Promise<void> {
+  const settings = await getSettings();
+  const daysInMs = settings.auto_archive_days * 24 * 60 * 60 * 1000;
+  const cutoffDate = new Date(Date.now() - daysInMs);
+  
+  const goals = await getGoals();
+  const tasks = await getTasks();
+  
+  // Archive completed goals older than cutoff
+  for (const goal of goals) {
+    if (goal.completed && !goal.archived && goal.completed_at) {
+      const completedDate = new Date(goal.completed_at);
+      if (completedDate < cutoffDate) {
+        await archiveGoal(goal.id);
+      }
+    }
+  }
+  
+  // Archive completed tasks older than cutoff
+  for (const task of tasks) {
+    if (task.completed && !task.archived && task.completed_at) {
+      const completedDate = new Date(task.completed_at);
+      if (completedDate < cutoffDate) {
+        await archiveTask(task.id);
+      }
+    }
+  }
 }

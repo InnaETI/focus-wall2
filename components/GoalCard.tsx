@@ -7,13 +7,22 @@ export interface GoalCardProps {
   name: string;
   deadline: string | null;
   whyItMatters: string | null;
+  completed?: boolean;
+  onToggleComplete?: (goalId: string) => void;
 }
 
-export default function GoalCard({ id, name, deadline, whyItMatters }: GoalCardProps) {
+export default function GoalCard({ id, name, deadline, whyItMatters, completed = false, onToggleComplete }: GoalCardProps) {
   const router = useRouter();
   
   const handleClick = () => {
     router.push(`/edit-goal/${id}`);
+  };
+  
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onToggleComplete) {
+      onToggleComplete(id);
+    }
   };
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null;
@@ -27,10 +36,19 @@ export default function GoalCard({ id, name, deadline, whyItMatters }: GoalCardP
   return (
     <div 
       onClick={handleClick}
-      className="bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-200 border-2 border-purple-100 cursor-pointer"
+      className={`bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-200 border-2 border-purple-100 cursor-pointer ${completed ? 'opacity-60' : ''}`}
     >
       <div className="flex items-start justify-between mb-3">
-        <h3 className="text-lg font-semibold text-gray-900 flex-1">{name}</h3>
+        <div className="flex items-start gap-3 flex-1">
+          <input
+            type="checkbox"
+            checked={completed}
+            onChange={handleCheckboxClick}
+            onClick={handleCheckboxClick}
+            className="mt-1 w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+          />
+          <h3 className={`text-lg font-semibold flex-1 ${completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>{name}</h3>
+        </div>
         <span className="text-2xl ml-2">🎯</span>
       </div>
       {deadlineDate && (
